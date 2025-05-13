@@ -19,6 +19,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
 from typing import Optional
+import tempfile
+import uuid
 
 class InstagramScraper:
     def __init__(self, driver):
@@ -214,7 +216,11 @@ def scrape(use_proxy=False, proxy_info=None, posts_count=3):
             options.add_argument(f"--proxy-server={proxy_info}")
             print(f"[Info] - Using proxy: {proxy_info}")
 
-    bot = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    # Create a unique user data directory for this session
+    user_data_dir = os.path.join(tempfile.gettempdir(), f'chrome_profile_{uuid.uuid4()}')
+    options.add_argument(f'--user-data-dir={user_data_dir}')
+    
+    bot = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     
     # Initialize the scrapers
     scraper = InstagramScraper(bot)
